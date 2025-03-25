@@ -26,9 +26,9 @@ public interface StockOperationService {
     /**
      * Поиск операций пополнения или списания товаров по идентификатору товара
      *
-     * @param goodsId идентификатор товара
-     * @param pageNumber    номер страницы
-     * @param pageSize    размер страницы
+     * @param goodsId    идентификатор товара
+     * @param pageNumber номер страницы
+     * @param pageSize   размер страницы
      * @return ответ на запрос
      */
     PaginatedResult<StockOperationsResponse> findStockByGoodsId(Long goodsId, Long pageNumber, Long pageSize);
@@ -39,4 +39,6 @@ public interface StockOperationService {
      * @param stockId идентификатор остатков товаров
      */
     void deleteStockById(Long stockId);
+
+    boolean existsByGoodsId(Long goodsId);
 }

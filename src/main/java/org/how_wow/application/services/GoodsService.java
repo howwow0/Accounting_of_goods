@@ -3,8 +3,11 @@ package org.how_wow.application.services;
 import org.how_wow.application.dto.goods.request.GoodsRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
 import org.how_wow.application.dto.repository.PaginatedResult;
+import org.how_wow.domain.enums.OperationType;
 import org.how_wow.exceptions.GoodsNotFoundException;
 import org.how_wow.exceptions.ValidationException;
+
+import java.util.Optional;
 
 /**
  * Сервис для товаров
@@ -59,4 +62,33 @@ public interface GoodsService {
      * @throws GoodsNotFoundException если товар не найден
      */
     GoodsResponse getGoodsById(Long goodsId);
+
+    /**
+     * Устанавливает количество товара 0
+     *
+     * @param goodsId ID товара
+     * @throws ValidationException    если идентификатор товара не прошел валидацию
+     * @throws GoodsNotFoundException если товар не найден
+     */
+    void setZeroQuantity(Long goodsId);
+    
+    boolean existsById(Long goodsId);
+
+    /**
+     * Обновляет количество товара на складе
+     *
+     * @param goodsId       ID товара
+     * @param quantity      количество товара, которое нужно прибавить/удалить в зависимости от операции
+     * @param operationType тип операции
+     */
+    void updateGoodsQuantity(Long goodsId, Long quantity, OperationType operationType);
+
+    /**
+     * Откатывает количество товара на складе
+     *
+     * @param goodsId       ID товара
+     * @param quantity      количество товара, которое нужно откатить в зависимости от операции
+     * @param operationType тип операции
+     */
+    void redoGoodsQuantity(Long goodsId, Long quantity, OperationType operationType);
 }

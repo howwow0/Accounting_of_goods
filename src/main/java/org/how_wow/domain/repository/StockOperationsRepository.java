@@ -24,4 +24,6 @@ public interface StockOperationsRepository extends Repository<StockOperations, L
      * @param goodsId идентификатор товара
      */
     void deleteAllByGoodsId(long goodsId);
+
+    boolean existsByGoodsId(Long goodsId);
 }

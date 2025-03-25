@@ -4,6 +4,7 @@ import org.how_wow.application.dto.goods.request.GoodsRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
 import org.how_wow.application.dto.repository.PaginatedResult;
 import org.how_wow.domain.model.Goods;
+import org.how_wow.domain.model.StockOperations;
 
 import java.util.stream.Collectors;
 
@@ -78,4 +79,5 @@ public class GoodsMapper {
                 .collect(Collectors.toList()));
         return result;
     }
+
 }

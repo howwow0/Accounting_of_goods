@@ -9,8 +9,10 @@ import org.how_wow.application.mappers.GoodsMapper;
 import org.how_wow.application.services.GoodsService;
 import org.how_wow.application.services.StockOperationService;
 import org.how_wow.application.validators.Validator;
+import org.how_wow.domain.enums.OperationType;
 import org.how_wow.domain.model.Goods;
 import org.how_wow.domain.repository.GoodsRepository;
+import org.how_wow.exceptions.GoodsHasOperationsException;
 import org.how_wow.exceptions.GoodsNotFoundException;
 
 import java.math.BigDecimal;
@@ -83,7 +85,8 @@ public class GoodsServiceImpl implements GoodsService {
         longIdValidator.validate(goodsId);
         if (!goodsRepository.existsById(goodsId))
             throw new GoodsNotFoundException("Товар с ID " + goodsId + " не найден");
-
+        if (stockOperationService.existsByGoodsId(goodsId))
+            throw new GoodsHasOperationsException("Товар не может быть удалён, так как с ним связаны операции на складе. Сначала удалите операции.");
         log.info("Удаление товара с ID {}", goodsId);
         goodsRepository.deleteById(goodsId);
         log.info("Удаление всех операций товара с ID {}", goodsId);
@@ -103,5 +106,26 @@ public class GoodsServiceImpl implements GoodsService {
                 });
 
         return goodsMapper.toGoodsResponse(goods);
+    }
+
+    @Override
+    public void setZeroQuantity(Long goodsId) {
+        // TODO сделать реализацию
+    }
+
+    @Override
+    public boolean existsById(Long goodsId) {
+        //TODO сделать реализацию
+        return false;
+    }
+
+    @Override
+    public void updateGoodsQuantity(Long goodsId, Long quantity, OperationType operationType) {
+        //TODO сделать реализацию
+    }
+
+    @Override
+    public void redoGoodsQuantity(Long goodsId, Long quantity, OperationType operationType) {
+        //TODO сделать реализацию
     }
 }

@@ -42,6 +42,12 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
     }
 
     @Override
+    public boolean existsByGoodsId(Long goodsId) {
+        return stockOperations.values().stream()
+                .anyMatch(stockOperation -> stockOperation.getGoodsId().equals(goodsId));
+    }
+
+    @Override
     public <S extends StockOperations> S save(S entity) {
         if (entity.getId() == null) {
             entity.setId(++currentId);
