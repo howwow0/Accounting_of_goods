@@ -45,7 +45,7 @@ public class InMemoryGoodsRepository implements GoodsRepository {
                 .pageSize(pageSize)
                 .totalItems((long) goodsMap.size())
                 .content(goodsMap.values().stream()
-                        .skip(pageNumber * pageSize)
+                        .skip((pageNumber - 1) * pageSize)
                         .limit(pageSize)
                         .collect(Collectors.toList()))
                 .build();

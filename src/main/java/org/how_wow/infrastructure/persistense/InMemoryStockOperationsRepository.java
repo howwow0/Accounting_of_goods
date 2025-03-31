@@ -74,7 +74,7 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
                 .pageSize(pageSize)
                 .totalItems((long) stockOperations.size())
                 .content(stockOperations.values().stream()
-                        .skip(pageNumber * pageSize)
+                        .skip((pageNumber - 1) * pageSize)
                         .limit(pageSize)
                         .collect(Collectors.toList()))
                 .build();

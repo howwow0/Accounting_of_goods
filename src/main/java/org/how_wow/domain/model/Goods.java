@@ -6,6 +6,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * Модель товара.
+ */
 @Builder
 @Getter
 @Setter
@@ -16,6 +19,11 @@ public class Goods {
     private Long quantity;
     private BigDecimal price;
 
+    /**
+     * Вычисляет общую стоимость товара.
+     *
+     * @return общая стоимость товара (цена * количество)
+     */
     public BigDecimal getTotalCost() {
         return price.multiply(new BigDecimal(quantity));
     }

@@ -4,17 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.how_wow.application.dto.StockOperations.request.StockOperationsRequest;
 import org.how_wow.application.dto.StockOperations.response.StockOperationsResponse;
+import org.how_wow.application.dto.goods.request.UpdateGoodsQuantityRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
 import org.how_wow.application.dto.repository.PaginatedResult;
-import org.how_wow.application.mappers.GoodsMapper;
 import org.how_wow.application.mappers.StockOperationsMapper;
 import org.how_wow.application.services.GoodsService;
 import org.how_wow.application.services.StockOperationService;
 import org.how_wow.application.validators.Validator;
 import org.how_wow.domain.enums.OperationType;
-import org.how_wow.domain.model.Goods;
 import org.how_wow.domain.model.StockOperations;
-import org.how_wow.domain.repository.GoodsRepository;
 import org.how_wow.domain.repository.StockOperationsRepository;
 import org.how_wow.exceptions.StockOperationsNotFoundException;
 
@@ -33,61 +31,65 @@ public class StockOperationsServiceImpl implements StockOperationService {
 
     @Override
     public void deleteAllStocksByGoodsId(Long goodsId) {
-        log.info("Проверка валидности ID товара для удаления: {}", goodsId);
+        log.info("Удаление всех операций для товара ID={}", goodsId);
         longIdValidator.validate(goodsId);
-        log.info("Удаление всех операций товара с ID: {}", goodsId);
+
         stockOperationsRepository.deleteAllByGoodsId(goodsId);
-        if (goodsService.existsById(goodsId))
-            goodsService.setZeroQuantity(goodsId);
-        log.info("Все операции товара с ID: {} удалены", goodsId);
+        goodsService.setZeroQuantity(goodsId);
+        log.info("Все операции товара ID={} удалены", goodsId);
     }
 
     @Override
-    public StockOperationsResponse createStock(StockOperationsRequest stockOperationsRequest) {
-        log.info("Проверка валидности запроса на создание операции со складом: {}", stockOperationsRequest);
-        longIdValidator.validate(stockOperationsRequest.goodsId());
-        quantityValidator.validate(stockOperationsRequest.quantity());
-        operationTypeValidator.validate(stockOperationsRequest.operationType());
+    public StockOperationsResponse createStock(StockOperationsRequest request) {
+        log.debug("Создание операции. Товар ID={}, Тип={}, Количество={}",
+                request.goodsId(), request.operationType(), request.quantity());
 
-        log.info("Создание операции со складом: {}", stockOperationsRequest);
-        StockOperations stockOperationsForSave = stockOperationsMapper.toStockOperations(stockOperationsRequest);
-        GoodsResponse goodsResponse = goodsService.getGoodsById(stockOperationsForSave.getGoodsId());
-        Long quantity = stockOperationsForSave.getQuantity();
-        OperationType operationType = stockOperationsForSave.getOperationType();
-        goodsService.updateGoodsQuantity(goodsResponse.id(), quantity, operationType);
-        StockOperations savedStockOperations = stockOperationsRepository.save(stockOperationsForSave);
+        longIdValidator.validate(request.goodsId());
+        quantityValidator.validate(request.quantity());
+        operationTypeValidator.validate(request.operationType());
 
-        log.info("Операция со складом создана с ID: {}", savedStockOperations.getId());
-        return stockOperationsMapper.toStockOperationsResponse(savedStockOperations);
+        StockOperations operation = stockOperationsMapper.toStockOperations(request);
+        goodsService.updateGoodsQuantity(new UpdateGoodsQuantityRequest(
+                request.goodsId(), request.quantity(), request.operationType()));
+
+        StockOperations savedOperation = stockOperationsRepository.save(operation);
+        log.info("Создана операция ID={} для товара ID={}",
+                savedOperation.getId(), request.goodsId());
+
+        return stockOperationsMapper.toStockOperationsResponse(savedOperation);
     }
 
     @Override
     public PaginatedResult<StockOperationsResponse> findStockByGoodsId(Long goodsId, Long pageNumber, Long pageSize) {
-        log.info("Проверка валидности номера страницы и размера страницы: pageNumber={}, pageSize={}", pageNumber, pageSize);
+        log.debug("Поиск операций по товару ID={}. Страница={}, Размер={}",
+                goodsId, pageNumber, pageSize);
+
         longIdValidator.validate(goodsId);
         pageNumberAndPageSizeValidator.validate(pageNumber);
         pageNumberAndPageSizeValidator.validate(pageSize);
-        log.info("Получение списка товаров с пагинацией: pageNumber={}, pageSize={}", pageNumber, pageSize);
-        return stockOperationsMapper.toPaginatedGoodsResponse(stockOperationsRepository.findByGoodsIdWithPaging(goodsId, pageNumber, pageSize));
+
+        return stockOperationsMapper.toPaginatedGoodsResponse(
+                stockOperationsRepository.findByGoodsIdWithPaging(goodsId, pageNumber, pageSize));
     }
 
     @Override
     public void deleteStockById(Long stockId) {
-        log.info("Проверка валидности ID операции со складом для удаления: {}", stockId);
+        log.debug("Удаление операции ID={}", stockId);
         longIdValidator.validate(stockId);
-        Optional<StockOperations> stockOperations = stockOperationsRepository.findById(stockId);
-        if (stockOperations.isEmpty()) {
-            log.error("Операция со складом с ID: {} не найдена", stockId);
-            throw new StockOperationsNotFoundException("Не найдена операция со складом с ID: " + stockId);
-        }
-        log.info("Удаление операции со складом с ID: {}", stockId);
+
+        StockOperations operation = stockOperationsRepository.findById(stockId)
+                .orElseThrow(() -> {
+                    log.error("Операция не найдена: ID={}", stockId);
+                    return new StockOperationsNotFoundException("Операция не найдена");
+                });
+
+        goodsService.undoGoodsQuantity(new UpdateGoodsQuantityRequest(
+                operation.getGoodsId(),
+                operation.getQuantity(),
+                operation.getOperationType()));
+
         stockOperationsRepository.deleteById(stockId);
-        StockOperations deletedStockOperations = stockOperations.get();
-        Long quantity = deletedStockOperations.getQuantity();
-        OperationType operationType = deletedStockOperations.getOperationType();
-        // Товар ДОЛЖЕН существовать - если нет, это ошибка данных
-        goodsService.redoGoodsQuantity(deletedStockOperations.getGoodsId(), quantity, operationType);
-        log.info("Операция со складом с ID: {} удалена", stockId);
+        log.info("Операция ID={} удалена", stockId);
     }
 
     @Override

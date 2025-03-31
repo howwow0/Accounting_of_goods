@@ -1,94 +1,95 @@
 package org.how_wow.application.services;
 
 import org.how_wow.application.dto.goods.request.GoodsRequest;
+import org.how_wow.application.dto.goods.request.UpdateGoodsQuantityRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
 import org.how_wow.application.dto.repository.PaginatedResult;
 import org.how_wow.domain.enums.OperationType;
-import org.how_wow.exceptions.GoodsNotFoundException;
-import org.how_wow.exceptions.ValidationException;
-
-import java.util.Optional;
+import org.how_wow.exceptions.*;
 
 /**
- * Сервис для товаров
+ * Сервис для управления товарами.
  */
 public interface GoodsService {
 
     /**
-     * Создание товара
-     *
-     * @param goodsRequest запрос на создание товара
-     * @return ответ на создание товара
-     * @throws ValidationException если запрос не прошел валидацию
+     * Создает новый товар.
+     * @param goodsRequest данные нового товара
+     * @return созданный товар
+     * @throws ValidationException если валидация не пройдена
      */
     GoodsResponse createGoods(GoodsRequest goodsRequest);
 
     /**
-     * Получение списка товаров с пагинацией
-     *
+     * Получает список товаров с пагинацией.
      * @param pageNumber номер страницы
-     * @param pageSize   размер страницы
-     * @return список товаров с пагинацией
-     * @throws ValidationException если номер страницы или размер страницы не прошли валидацию
+     * @param pageSize размер страницы
+     * @return список товаров
      */
     PaginatedResult<GoodsResponse> getGoods(Long pageNumber, Long pageSize);
 
     /**
-     * Обновление товара
-     *
-     * @param goodsId      идентификатор товара
-     * @param goodsRequest запрос на обновление товара
-     * @return ответ на обновление товара
-     * @throws ValidationException    если запрос не прошел валидацию
+     * Обновляет товар по его ID.
+     * @param goodsId ID товара
+     * @param goodsRequest обновленные данные
+     * @return обновленный товар
+     * @throws ValidationException если валидация не пройдена
      * @throws GoodsNotFoundException если товар не найден
      */
     GoodsResponse updateGoods(Long goodsId, GoodsRequest goodsRequest);
 
     /**
-     * Удаление товара
-     *
-     * @param goodsId идентификатор товара
-     * @throws ValidationException    если идентификатор товара не прошел валидацию
+     * Удаляет товар по ID.
+     * @param goodsId ID товара
+     * @throws ValidationException если валидация не пройдена
      * @throws GoodsNotFoundException если товар не найден
+     * @throws GoodsHasOperationsException если у товара есть связанные операции
      */
     void deleteGoods(Long goodsId);
 
     /**
-     * Получение товара по идентификатору
-     *
-     * @param goodsId идентификатор товара
-     * @return ответ на получение товара
-     * @throws ValidationException    если идентификатор товара не прошел валидацию
+     * Получает товар по его ID.
+     * @param goodsId ID товара
+     * @return найденный товар
+     * @throws ValidationException если валидация не пройдена
      * @throws GoodsNotFoundException если товар не найден
      */
     GoodsResponse getGoodsById(Long goodsId);
 
     /**
-     * Устанавливает количество товара 0
-     *
+     * Обнуляет количество товара.
      * @param goodsId ID товара
-     * @throws ValidationException    если идентификатор товара не прошел валидацию
+     * @return обновленный товар с нулевым количеством
+     * @throws ValidationException если валидация не пройдена
      * @throws GoodsNotFoundException если товар не найден
      */
-    void setZeroQuantity(Long goodsId);
-    
+    GoodsResponse setZeroQuantity(Long goodsId);
+
+    /**
+     * Проверяет существование товара по ID.
+     * @param goodsId ID товара
+     * @return true, если товар существует
+     * @throws ValidationException если валидация не пройдена
+     */
     boolean existsById(Long goodsId);
 
     /**
-     * Обновляет количество товара на складе
-     *
-     * @param goodsId       ID товара
-     * @param quantity      количество товара, которое нужно прибавить/удалить в зависимости от операции
-     * @param operationType тип операции
+     * Обновляет количество товара.
+     * @param updateGoodsQuantityRequest данные для обновления количества
+     * @return обновленный товар
+     * @throws ValidationException если валидация не пройдена
+     * @throws GoodsNotFoundException если товар не найден
+     * @throws InsufficientGoodsException если товара на складе недостаточно, при выгрузке
      */
-    void updateGoodsQuantity(Long goodsId, Long quantity, OperationType operationType);
+    GoodsResponse updateGoodsQuantity(UpdateGoodsQuantityRequest updateGoodsQuantityRequest);
 
     /**
-     * Откатывает количество товара на складе
-     *
-     * @param goodsId       ID товара
-     * @param quantity      количество товара, которое нужно откатить в зависимости от операции
-     * @param operationType тип операции
+     * Отменяет изменение количества товара.
+     * @param updateGoodsQuantityRequest данные для отмены
+     * @return обновленный товар
+     * @throws ValidationException если валидация не пройдена
+     * @throws GoodsNotFoundException если товар не найден
+     * @throws UndoOperationException если текущее количество на складе, меньше отменяемого
      */
-    void redoGoodsQuantity(Long goodsId, Long quantity, OperationType operationType);
+    GoodsResponse undoGoodsQuantity(UpdateGoodsQuantityRequest updateGoodsQuantityRequest);
 }

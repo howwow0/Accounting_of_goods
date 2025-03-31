@@ -7,6 +7,9 @@ import org.how_wow.domain.enums.OperationType;
 
 import java.time.LocalDateTime;
 
+/**
+ * Модель складской операции.
+ */
 @Getter
 @Setter
 @Builder
