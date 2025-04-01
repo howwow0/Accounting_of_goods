@@ -58,9 +58,10 @@ public class GoodsMapper {
     public Goods updateGoods(Goods goods, GoodsRequest goodsRequest) {
         return Goods.builder()
                 .id(goods.getId())
-                .name(goodsRequest.name() != null ? goodsRequest.name() : goods.getName())
-                .price(goodsRequest.price() != null ? goodsRequest.price() : goods.getPrice())
-                .category(goodsRequest.category() != null ? goodsRequest.category() : goods.getCategory())
+                .name(goodsRequest.name())
+                .price(goodsRequest.price())
+                .category(goodsRequest.category())
+                .quantity(goods.getQuantity())
                 .build();
     }
 

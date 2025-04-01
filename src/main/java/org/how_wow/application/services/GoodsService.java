@@ -1,5 +1,6 @@
 package org.how_wow.application.services;
 
+import org.how_wow.application.dto.goods.request.FilterGoodsRequest;
 import org.how_wow.application.dto.goods.request.GoodsRequest;
 import org.how_wow.application.dto.goods.request.UpdateGoodsQuantityRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
@@ -27,6 +28,15 @@ public interface GoodsService {
      * @return список товаров
      */
     PaginatedResult<GoodsResponse> getGoods(Long pageNumber, Long pageSize);
+
+    /**
+     * Получает список товаров с пагинацией и фильтрацией.
+     * @param pageNumber номер страницы
+     * @param pageSize размер страницы
+     * @param filterRequest данные для фильтрации
+     * @return список товаров
+     */
+    PaginatedResult<GoodsResponse> getGoods(Long pageNumber, Long pageSize, FilterGoodsRequest filterRequest);
 
     /**
      * Обновляет товар по его ID.

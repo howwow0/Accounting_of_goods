@@ -2,6 +2,7 @@ package org.how_wow.application.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.how_wow.application.dto.goods.request.FilterGoodsRequest;
 import org.how_wow.application.dto.goods.request.GoodsRequest;
 import org.how_wow.application.dto.goods.request.UpdateGoodsQuantityRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
@@ -57,13 +58,18 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     @Override
+    public PaginatedResult<GoodsResponse> getGoods(Long pageNumber, Long pageSize, FilterGoodsRequest filterRequest) {
+        //TODO РЕАЛИЗОВАТЬ
+        return null;
+    }
+
+    @Override
     public GoodsResponse updateGoods(Long goodsId, GoodsRequest goodsRequest) {
         log.debug("Обновление товара ID={}", goodsId);
         longIdValidator.validate(goodsId);
-
-        if (goodsRequest.name() != null) nameValidator.validate(goodsRequest.name());
-        if (goodsRequest.category() != null) categoryValidator.validate(goodsRequest.category());
-        if (goodsRequest.price() != null) priceValidator.validate(goodsRequest.price());
+        nameValidator.validate(goodsRequest.name());
+        categoryValidator.validate(goodsRequest.category());
+        priceValidator.validate(goodsRequest.price());
 
         Goods goods = goodsRepository.findById(goodsId)
                 .orElseThrow(() -> {

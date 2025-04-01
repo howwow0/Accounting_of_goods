@@ -2,48 +2,25 @@ package org.how_wow;
 
 
 import org.how_wow.application.mappers.GoodsMapper;
-import org.how_wow.application.mappers.StockOperationsMapper;
 import org.how_wow.application.services.GoodsService;
-import org.how_wow.application.services.StockOperationService;
 import org.how_wow.application.services.impl.GoodsServiceImpl;
-import org.how_wow.application.services.impl.StockOperationsServiceImpl;
 import org.how_wow.application.validators.*;
-import org.how_wow.domain.model.Goods;
 import org.how_wow.domain.repository.GoodsRepository;
 import org.how_wow.domain.repository.StockOperationsRepository;
 import org.how_wow.infrastructure.persistense.InMemoryGoodsRepository;
 import org.how_wow.infrastructure.persistense.InMemoryStockOperationsRepository;
+import org.how_wow.infrastructure.ui.view.factories.ProductDialogFactory;
 import org.how_wow.infrastructure.ui.presenter.ProductListViewPresenter;
-import org.how_wow.infrastructure.ui.view.ProductListView;
+import org.how_wow.infrastructure.ui.view.factories.SwingProductDialogFactory;
+import org.how_wow.infrastructure.ui.view.impl.ProductListViewImpl;
 
 import javax.swing.*;
-import java.math.BigDecimal;
 import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
         GoodsRepository goodsRepository = new InMemoryGoodsRepository(new HashMap<>());
         StockOperationsRepository stockOperationsRepository = new InMemoryStockOperationsRepository(new HashMap<>());
-
-        goodsRepository.save(Goods.builder()
-                .name("asd")
-                .quantity(1L)
-                .category("asdasd")
-                .price(BigDecimal.ONE)
-                .build());
-        goodsRepository.save(Goods.builder()
-                .name("asd")
-                .quantity(1L)
-                .category("asdasd")
-                .price(BigDecimal.ONE)
-                .build());
-        goodsRepository.save(Goods.builder()
-                .name("asd")
-                .quantity(1L)
-                .category("asdasd")
-                .price(BigDecimal.ONE)
-                .build());
-
         LongIdValidator idValidator = new LongIdValidator();
         NameValidator nameValidator = new NameValidator();
         CategoryValidator categoryValidator = new CategoryValidator();
@@ -63,11 +40,17 @@ public class Main {
                 quantityValidator,
                 operationTypeValidator
         );
+
         SwingUtilities.invokeLater(() -> {
-            ProductListView productListView = new ProductListView();
-            productListView.setVisible(true);
-            ProductListViewPresenter productListViewPresenter = new ProductListViewPresenter(productListView, goodsService);
-            productListViewPresenter.bindOnUpdate();
+            ProductListViewImpl productListViewImpl = new ProductListViewImpl();
+            ProductDialogFactory productDialogFactory = new SwingProductDialogFactory(productListViewImpl, goodsService);
+            ProductListViewPresenter productListViewPresenter = new ProductListViewPresenter(productListViewImpl, goodsService, productDialogFactory);
+            productListViewPresenter.bindOnAdd();
+            productListViewPresenter.bindOnEdit();
+            productListViewPresenter.bindOnRefresh();
+            productListViewPresenter.bindOnResetFilter();
+            productListViewPresenter.bindOnDelete();
+            productListViewImpl.setVisible(true);
         });
     }
 }

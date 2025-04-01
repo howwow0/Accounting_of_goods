@@ -1,4 +1,4 @@
-package org.how_wow.infrastructure.ui.view;
+package org.how_wow.infrastructure.ui.view.custom;
 
 import org.how_wow.application.dto.goods.response.GoodsResponse;
 import javax.swing.table.AbstractTableModel;
@@ -26,22 +26,15 @@ public class ProductTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         GoodsResponse goods = goodsList.get(rowIndex);
-        switch (columnIndex) {
-            case 0:
-                return goods.id();
-            case 1:
-                return goods.name();
-            case 2:
-                return goods.category();
-            case 3:
-                return goods.price();
-            case 4:
-                return goods.quantity();
-            case 5:
-                return goods.totalCost();
-            default:
-                return null;
-        }
+        return switch (columnIndex) {
+            case 0 -> goods.id();
+            case 1 -> goods.name();
+            case 2 -> goods.category();
+            case 3 -> goods.price();
+            case 4 -> goods.quantity();
+            case 5 -> goods.totalCost();
+            default -> null;
+        };
     }
 
     @Override
