@@ -8,8 +8,12 @@ import org.how_wow.domain.enums.OperationType;
 import java.time.LocalDateTime;
 
 /**
- * Модель складской операции.
- */
+ * Модель операции со складом.
+ * <p>
+ * Содержит информацию о товаре, типе операции (пополнение или списание),
+ * количестве и времени операции.
+ * </p>
+ **/
 @Getter
 @Setter
 @Builder

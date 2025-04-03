@@ -13,18 +13,19 @@ import java.util.List;
 import java.util.Objects;
 
 public class ProductListViewImpl extends JFrame implements ProductListView {
-    private JTextField searchField;
-    private JTextField categoryFilter;
+    private JTextField nameField;
+    private JTextField categoryField;
     private JTable productsTable;
     private JButton applyFilterButton, resetFilterButton, refreshButton, addButton, editButton, deleteButton;
     private JSpinner pageSpinner;
     private JComboBox<Integer> pageSizeCombo;
     private ProductTableModel productTableModel;
+    private JProgressBar progressBar;
 
     public ProductListViewImpl() {
         setTitle("Учет товаров - Список");
-        setSize(850, 600);
-        setMinimumSize(new Dimension(850, 600));
+        setSize(900, 600);
+        setMinimumSize(new Dimension(900, 600));
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -33,22 +34,40 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
 
         mainPanel.add(createFilterPanel(), BorderLayout.NORTH);
         mainPanel.add(createTablePanel(), BorderLayout.CENTER);
-        mainPanel.add(createControlPanel(), BorderLayout.SOUTH);
+        mainPanel.add(createBottomPanel(), BorderLayout.SOUTH);
 
         add(mainPanel);
+    }
+
+    private JPanel createBottomPanel() {
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+        bottomPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        JPanel controlPanel = createControlPanel();
+        controlPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        bottomPanel.add(controlPanel);
+
+        progressBar = new JProgressBar();
+        progressBar.setVisible(false);
+        progressBar.setIndeterminate(true);
+        progressBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
+        bottomPanel.add(progressBar);
+
+        return bottomPanel;
     }
 
     private JPanel createFilterPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.setBorder(BorderFactory.createTitledBorder("Фильтры"));
 
-        panel.add(new JLabel("Поиск:"));
-        searchField = new JTextField(20);
-        panel.add(searchField);
+        panel.add(new JLabel("Наименование:"));
+        nameField = new JTextField(20);
+        panel.add(nameField);
 
         panel.add(new JLabel("Категория:"));
-        categoryFilter = new JTextField(20);
-        panel.add(categoryFilter);
+        categoryField = new JTextField(20);
+        panel.add(categoryField);
 
         applyFilterButton = new JButton("Применить");
         resetFilterButton = new JButton("Сбросить");
@@ -63,7 +82,7 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
         productsTable = new JTable(productTableModel);
         productsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         productsTable.setAutoCreateRowSorter(true);
-        productsTable.getSelectionModel().addListSelectionListener(x -> {
+        productsTable.getSelectionModel().addListSelectionListener(_ -> {
             if (productsTable.getSelectedRow() == -1) {
                 editButton.setEnabled(false);
                 deleteButton.setEnabled(false);
@@ -109,13 +128,13 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
     }
 
     @Override
-    public String getSearchField() {
-        return searchField.getText();
+    public String getNameFieldText() {
+        return nameField.getText();
     }
 
     @Override
-    public String getCategoryFilter() {
-        return categoryFilter.getText();
+    public String getCategoryFieldText() {
+        return categoryField.getText();
     }
 
     @Override
@@ -165,8 +184,8 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
 
     @Override
     public void clearFilterFields() {
-        searchField.setText("");
-        categoryFilter.setText("");
+        nameField.setText("");
+        categoryField.setText("");
     }
 
     @Override
@@ -175,5 +194,16 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
             return -1;
         }
         return (long) productsTable.getValueAt(productsTable.getSelectedRow(), 0);
+    }
+
+    @Override
+    public void setLoading(boolean isLoading) {
+        progressBar.setVisible(isLoading);
+        applyFilterButton.setEnabled(!isLoading);
+        refreshButton.setEnabled(!isLoading);
+        editButton.setEnabled(!isLoading && productsTable.getSelectedRow() != -1);
+        deleteButton.setEnabled(!isLoading && productsTable.getSelectedRow() != -1);
+        addButton.setEnabled(!isLoading);
+        resetFilterButton.setEnabled(!isLoading);
     }
 }

@@ -4,8 +4,11 @@ import org.how_wow.application.dto.repository.PaginatedResult;
 import org.how_wow.domain.model.StockOperations;
 
 
-/*
- * Репозиторий для работы с операциями на складе
+/** Интерфейс репозитория для работы с операциями со складом.
+ * <p>
+ * Предоставляет методы для выполнения операций CRUD (Create, Read, Update, Delete)
+ * над сущностями операции со складом.
+ * </p>
  */
 public interface StockOperationsRepository extends Repository<StockOperations, Long> {
     /**
@@ -25,5 +28,11 @@ public interface StockOperationsRepository extends Repository<StockOperations, L
      */
     void deleteAllByGoodsId(long goodsId);
 
+    /**
+     * Проверяет, существуют ли операции по идентификатору товара
+     *
+     * @param goodsId идентификатор товара
+     * @return true, если операции существуют, иначе false
+     */
     boolean existsByGoodsId(Long goodsId);
 }

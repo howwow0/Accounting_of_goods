@@ -10,9 +10,9 @@ public interface ProductListView {
 
     Component getComponent();
 
-    String getSearchField();
+    String getNameFieldText();
 
-    String getCategoryFilter();
+    String getCategoryFieldText();
 
     long getCurrentPage();
 
@@ -35,4 +35,6 @@ public interface ProductListView {
     void clearFilterFields();
 
     long getSelectedProductId();
+
+    void setLoading(boolean isLoading);
 }

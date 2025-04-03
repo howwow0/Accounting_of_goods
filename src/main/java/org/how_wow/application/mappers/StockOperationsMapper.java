@@ -9,15 +9,17 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 /**
- * Маппер для операций со складом
+ * Маппер для операций со складом.
+ * Этот класс используется для преобразования между моделями операций и их представлениями,
+ * такими как запросы и ответы.
  */
 public class StockOperationsMapper {
 
     /**
-     * Преобразование операции в ответ
+     * Преобразование модели операции в ответ на запрос.
      *
-     * @param stockOperations операция
-     * @return ответ
+     * @param stockOperations операция, которую нужно преобразовать.
+     * @return объект {@link StockOperationsResponse} — ответ с информацией о операции.
      */
     public StockOperationsResponse toStockOperationsResponse(StockOperations stockOperations) {
         return StockOperationsResponse.builder()
@@ -30,25 +32,25 @@ public class StockOperationsMapper {
     }
 
     /**
-     * Преобразование запроса в операцию
+     * Преобразование запроса на создание операции в модель операции.
      *
-     * @param stockOperationsRequest запрос
-     * @return операция
+     * @param stockOperationsRequest запрос на создание операции.
+     * @return объект {@link StockOperations} — модель операции, готовая для сохранения.
      */
     public StockOperations toStockOperations(StockOperationsRequest stockOperationsRequest) {
         return StockOperations.builder()
                 .operationType(stockOperationsRequest.operationType())
                 .goodsId(stockOperationsRequest.goodsId())
                 .quantity(stockOperationsRequest.quantity())
-                .operationDateTime(LocalDateTime.now())
+                .operationDateTime(LocalDateTime.now())  // Время операции устанавливается на момент создания.
                 .build();
     }
 
     /**
-     * Преобразование пагинированного списка операций в ответ
+     * Преобразование пагинированного списка операций в пагинированный список ответов.
      *
-     * @param byGoodsIdWithPaging пагинированный список операций
-     * @return пагинированный список ответов
+     * @param byGoodsIdWithPaging пагинированный список операций.
+     * @return объект {@link PaginatedResult} с преобразованными операциями в {@link StockOperationsResponse}.
      */
     public PaginatedResult<StockOperationsResponse> toPaginatedGoodsResponse(PaginatedResult<StockOperations> byGoodsIdWithPaging) {
         PaginatedResult<StockOperationsResponse> result = PaginatedResult.<StockOperationsResponse>builder()
@@ -58,7 +60,7 @@ public class StockOperationsMapper {
                 .totalPages(byGoodsIdWithPaging.getTotalPages())
                 .build();
         result.setContent(byGoodsIdWithPaging.getContent().stream()
-                .map(this::toStockOperationsResponse)
+                .map(this::toStockOperationsResponse)  // Преобразуем каждую операцию в StockOperationsResponse
                 .collect(Collectors.toList()));
         return result;
     }

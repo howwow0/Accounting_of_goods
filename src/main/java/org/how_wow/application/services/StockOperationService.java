@@ -7,42 +7,71 @@ import org.how_wow.exceptions.StockOperationsNotFoundException;
 
 /**
  * Сервис для управления операциями со складом.
+ * <p>
+ * Предоставляет методы для создания, удаления и поиска операций пополнения и списания товаров.
+ * </p>
  */
 public interface StockOperationService {
 
     /**
      * Удаляет все операции по товару.
-     * @param goodsId ID товара
+     * <p>
+     * Этот метод удаляет все операции пополнения или списания для указанного товара
+     * и устанавливает его количество в 0.
+     * </p>
+     *
+     * @param goodsId ID товара, для которого нужно удалить все операции.
      */
     void deleteAllStocksByGoodsId(Long goodsId);
 
     /**
      * Создает новую операцию на складе.
-     * @param stockOperationsRequest данные операции
-     * @return созданная операция
+     * <p>
+     * Этот метод сохраняет операцию пополнения или списания товара на склад,
+     * обновляет количество товара в базе данных и возвращает ответ с информацией
+     * о созданной операции.
+     * </p>
+     *
+     * @param stockOperationsRequest Данные для создания операции (тип операции, количество товара).
+     * @return Ответ с информацией о созданной операции.
      */
     StockOperationsResponse createStock(StockOperationsRequest stockOperationsRequest);
 
     /**
      * Получает список операций по товару с пагинацией.
-     * @param goodsId ID товара
-     * @param pageNumber номер страницы
-     * @param pageSize размер страницы
-     * @return список операций
+     * <p>
+     * Этот метод позволяет получить список операций пополнения и списания для указанного товара,
+     * с возможностью пагинации (разбиение на страницы).
+     * </p>
+     *
+     * @param goodsId ID товара, для которого нужно получить операции.
+     * @param pageNumber Номер страницы.
+     * @param pageSize Размер страницы.
+     * @return Пагинированный список операций.
      */
     PaginatedResult<StockOperationsResponse> findStockByGoodsId(Long goodsId, Long pageNumber, Long pageSize);
 
     /**
      * Удаляет операцию по ее ID.
-     * @param stockId ID операции
-     * @throws StockOperationsNotFoundException если операция не найдена
+     * <p>
+     * Этот метод удаляет конкретную операцию по ее уникальному ID,
+     * а также отменяет изменения в количестве товара в базе данных.
+     * </p>
+     *
+     * @param stockId ID операции, которую нужно удалить.
+     * @throws StockOperationsNotFoundException Если операция с таким ID не найдена.
      */
     void deleteStockById(Long stockId);
 
     /**
      * Проверяет существование операций по товару.
-     * @param goodsId ID товара
-     * @return true, если операции существуют
+     * <p>
+     * Этот метод проверяет, существуют ли операции пополнения или списания для
+     * указанного товара в базе данных.
+     * </p>
+     *
+     * @param goodsId ID товара.
+     * @return true, если операции существуют, иначе false.
      */
     boolean existsByGoodsId(Long goodsId);
 }

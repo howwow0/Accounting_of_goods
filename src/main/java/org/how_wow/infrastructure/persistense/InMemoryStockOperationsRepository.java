@@ -10,13 +10,22 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Реализация репозитория операций со складом в памяти
+ * Реализация репозитория операций со складом в памяти.
+ * Хранит операции в коллекции и предоставляет базовые операции CRUD, а также пагинацию.
  */
 @RequiredArgsConstructor
 public class InMemoryStockOperationsRepository implements StockOperationsRepository {
     private final Map<Long, StockOperations> stockOperations;
     private long currentId = 0L;
 
+    /**
+     * Находит операции по ID товара с пагинацией.
+     *
+     * @param goodsId   ID товара
+     * @param pageNumber номер страницы
+     * @param pageSize   размер страницы
+     * @return пагинированный список операций
+     */
     @Override
     public PaginatedResult<StockOperations> findByGoodsIdWithPaging(long goodsId, long pageNumber, long pageSize) {
         return PaginatedResult.<StockOperations>builder()
@@ -32,6 +41,11 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
                 .build();
     }
 
+    /**
+     * Удаляет все операции по ID товара.
+     *
+     * @param goodsId ID товара
+     */
     @Override
     public void deleteAllByGoodsId(long goodsId) {
         for (StockOperations stockOperation : stockOperations.values()) {
@@ -41,12 +55,25 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
         }
     }
 
+    /**
+     * Проверяет существование операций по ID товара.
+     *
+     * @param goodsId ID товара
+     * @return true, если операции существуют, иначе false
+     */
     @Override
     public boolean existsByGoodsId(Long goodsId) {
         return stockOperations.values().stream()
                 .anyMatch(stockOperation -> stockOperation.getGoodsId().equals(goodsId));
     }
 
+    /**
+     * Сохраняет новую или обновленную операцию в репозитории.
+     *
+     * @param entity операция для сохранения
+     * @param <S> тип операции
+     * @return сохраненная операция
+     */
     @Override
     public <S extends StockOperations> S save(S entity) {
         if (entity.getId() == null) {
@@ -56,16 +83,35 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
         return entity;
     }
 
+    /**
+     * Находит операцию по ее ID.
+     *
+     * @param aLong ID операции
+     * @return операция, если она существует, иначе Optional.empty()
+     */
     @Override
     public Optional<StockOperations> findById(Long aLong) {
         return Optional.ofNullable(stockOperations.get(aLong));
     }
 
+    /**
+     * Проверяет существование операции по ее ID.
+     *
+     * @param aLong ID операции
+     * @return true, если операция существует, иначе false
+     */
     @Override
     public boolean existsById(Long aLong) {
         return stockOperations.containsKey(aLong);
     }
 
+    /**
+     * Находит все операции с пагинацией.
+     *
+     * @param pageNumber номер страницы
+     * @param pageSize   размер страницы
+     * @return пагинированный список операций
+     */
     @Override
     public PaginatedResult<StockOperations> findAllWithPaging(long pageNumber, long pageSize) {
         return PaginatedResult.<StockOperations>builder()
@@ -80,11 +126,21 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
                 .build();
     }
 
+    /**
+     * Возвращает общее количество операций в репозитории.
+     *
+     * @return количество операций
+     */
     @Override
     public long count() {
         return stockOperations.size();
     }
 
+    /**
+     * Удаляет операцию по ее ID.
+     *
+     * @param aLong ID операции
+     */
     @Override
     public void deleteById(Long aLong) {
         stockOperations.remove(aLong);

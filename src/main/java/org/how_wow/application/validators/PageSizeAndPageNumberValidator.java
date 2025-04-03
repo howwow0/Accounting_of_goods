@@ -10,6 +10,7 @@ public class PageSizeAndPageNumberValidator implements Validator<Long> {
      * Проверяет, что размер страницы и номер страницы больше 0
      *
      * @param aLong размер страницы или номер страницы
+     * @throws ValidationException если размер страницы или номер страницы меньше 0 или равен 0
      */
     @Override
     public void validate(Long aLong) {

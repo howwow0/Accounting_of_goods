@@ -7,19 +7,19 @@ import org.how_wow.exceptions.ValidationException;
  */
 public class CategoryValidator implements Validator<String> {
 
-    private final int MAX_LENGTH = 25;
-
     /**
      * Проверяет категорию на валидность.
+     *
      * @param s категория
      * @throws ValidationException если категория не валидна
      */
     @Override
     public void validate(String s) {
-        if(s == null || s.isEmpty()) {
+        if (s == null || s.isEmpty()) {
             throw new ValidationException("Категория не может быть пустой");
         }
-        if(s.length() > MAX_LENGTH) {
+        int MAX_LENGTH = 25;
+        if (s.length() > MAX_LENGTH) {
             throw new ValidationException("Категория не может быть длиннее " + MAX_LENGTH + " символов");
         }
     }

@@ -10,8 +10,8 @@ public class LongIdValidator implements Validator<Long> {
     /**
      * Проверка ID
      *
-     * @throws ValidationException если ID пустой или меньше или равен нулю
      * @param aLong ID
+     * @throws ValidationException если ID пустой или меньше или равен нулю
      */
     @Override
     public void validate(Long aLong) {

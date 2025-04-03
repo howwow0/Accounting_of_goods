@@ -5,12 +5,12 @@ import org.how_wow.application.dto.goods.request.FilterGoodsRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
 import org.how_wow.application.dto.repository.PaginatedResult;
 import org.how_wow.application.services.GoodsService;
-import org.how_wow.infrastructure.ui.view.factories.ProductDialogFactory;
+import org.how_wow.infrastructure.ui.presenter.utils.SwingUtils;
 import org.how_wow.infrastructure.ui.view.ProductListView;
+import org.how_wow.infrastructure.ui.view.factories.ProductDialogFactory;
 import org.how_wow.infrastructure.ui.view.impl.ProductDialogImpl;
 
 import javax.swing.*;
-
 
 @RequiredArgsConstructor
 public class ProductListViewPresenter {
@@ -19,14 +19,14 @@ public class ProductListViewPresenter {
     private final ProductDialogFactory productDialogFactory;
 
     public void bindOnResetFilter() {
-        view.setResetFilterButtonAction(e -> {
+        view.setResetFilterButtonAction(_ -> {
             view.clearFilterFields();
             refreshData();
         });
     }
 
     public void bindOnEdit() {
-        view.setEditButtonAction(e -> {
+        view.setEditButtonAction(_ -> {
             long productId = view.getSelectedProductId();
             ProductDialogImpl productDialogImpl = productDialogFactory.createEditDialog(productId);
             productDialogImpl.setVisible(true);
@@ -35,7 +35,7 @@ public class ProductListViewPresenter {
     }
 
     public void bindOnAdd() {
-        view.setAddButtonAction(e -> {
+        view.setAddButtonAction(_ -> {
             ProductDialogImpl productDialogImpl = productDialogFactory.createCreateDialog();
             productDialogImpl.setVisible(true);
             refreshData();
@@ -43,40 +43,65 @@ public class ProductListViewPresenter {
     }
 
     public void bindOnRefresh() {
-        view.setRefreshButtonAction(e ->
-                refreshData());
+        view.setRefreshButtonAction(_ -> refreshData());
     }
 
     public void bindOnDelete() {
-        view.setDeleteButtonAction(e -> {
+        view.setDeleteButtonAction(_ -> {
             long productId = view.getSelectedProductId();
-            int answer = JOptionPane.showConfirmDialog(view.getComponent(), "Вы точно хотите удалить товар с ID " + productId + "?", "Вы уверены?", JOptionPane.OK_CANCEL_OPTION);
-            if (answer == JOptionPane.OK_OPTION) {
-                try {
-                    goodsService.deleteGoods(productId);
-                    refreshData();
-                } catch (RuntimeException ex) {
-                    JOptionPane.showMessageDialog(view.getComponent(), ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
-                }
+            if (JOptionPane.showConfirmDialog(view.getComponent(), "Вы точно хотите удалить товар с ID " + productId + "?",
+                    "Подтверждение удаления",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION) {
+                SwingUtils.executeAsync(() -> {
+                    try {
+                        goodsService.deleteGoods(productId);
+                        refreshData();
+                    } catch (RuntimeException ex) {
+                        JOptionPane.showMessageDialog(view.getComponent(), ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
             }
         });
     }
 
     public void bindOnFilter() {
-        view.setApplyFilterButtonAction(e -> {
-            FilterGoodsRequest filterGoodsRequest = FilterGoodsRequest.builder()
-                    .searchAllFields(view.getSearchField())
-                    .category(view.getCategoryFilter())
-                    .build();
-            //TODO решить проблему сброса фильтрации при обновлении данных
-            PaginatedResult<GoodsResponse> goodsList = goodsService.getGoods(view.getCurrentPage(), view.getPageSize(), filterGoodsRequest);
-            view.setProductList(goodsList.getContent());
+        view.setApplyFilterButtonAction(_ -> {
+            view.setLoading(true);
+            SwingUtils.executeAsync(() -> {
+                try {
+                    FilterGoodsRequest request = FilterGoodsRequest.builder()
+                            .name(view.getNameFieldText())
+                            .category(view.getCategoryFieldText())
+                            .build();
+
+                    PaginatedResult<GoodsResponse> goodsList = goodsService.getGoods(
+                            view.getCurrentPage(),
+                            view.getPageSize(),
+                            request
+                    );
+
+                    SwingUtilities.invokeLater(() -> view.setProductList(goodsList.getContent()));
+                } catch (RuntimeException ex) {
+                    JOptionPane.showMessageDialog(view.getComponent(), ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+                }
+            }, () -> view.setLoading(false));
         });
     }
 
     private void refreshData() {
-        PaginatedResult<GoodsResponse> goodsList = goodsService.getGoods(view.getCurrentPage(), view.getPageSize());
-        view.setProductList(goodsList.getContent());
-    }
+        view.setLoading(true);
+        SwingUtils.executeAsync(() -> {
+            try {
+                PaginatedResult<GoodsResponse> goodsList = goodsService.getGoods(
+                        view.getCurrentPage(),
+                        view.getPageSize()
+                );
 
+                SwingUtilities.invokeLater(() -> view.setProductList(goodsList.getContent()));
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(view.getComponent(), ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }, () -> view.setLoading(false));
+    }
 }
