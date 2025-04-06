@@ -42,7 +42,7 @@
 4. Для сборки и запуска проекта используйте Maven:
     ```bash
     mvn clean install
-    mvn exec:java -Dexec.mainClass="org.how_wow.Main"
+    mvn exec:java -Dexec.mainClass=org.how_wow.Main
     ```
 
 5. Приложение будет запущено, и вы сможете использовать его для учета товаров и операций.
