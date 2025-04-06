@@ -1,4 +1,4 @@
-package org.how_wow.application.dto.StockOperations.response;
+package org.how_wow.application.dto.stockOperations.response;
 
 import lombok.Builder;
 import org.how_wow.domain.enums.OperationType;

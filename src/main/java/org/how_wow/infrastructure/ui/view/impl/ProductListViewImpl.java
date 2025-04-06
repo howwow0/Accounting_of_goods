@@ -1,26 +1,34 @@
 package org.how_wow.infrastructure.ui.view.impl;
 
+import lombok.Setter;
+import org.how_wow.application.dto.goods.request.FilterGoodsRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
+import org.how_wow.infrastructure.ui.presenters.ProductListViewPresenter;
 import org.how_wow.infrastructure.ui.view.ProductListView;
 import org.how_wow.infrastructure.ui.view.custom.ProductTableModel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 public class ProductListViewImpl extends JFrame implements ProductListView {
-    private JTextField nameField;
-    private JTextField categoryField;
-    private JTable productsTable;
-    private JButton applyFilterButton, resetFilterButton, refreshButton, addButton, editButton, deleteButton;
-    private JSpinner pageSpinner;
-    private JComboBox<Integer> pageSizeCombo;
-    private ProductTableModel productTableModel;
-    private JProgressBar progressBar;
+    private final JTextField nameField = new JTextField(20);
+    private final JTextField categoryField = new JTextField(20);
+    private final JTable productsTable;
+    private final ProductTableModel productTableModel;
+    private final JButton applyFilterButton = new JButton("Применить");
+    private final JButton resetFilterButton = new JButton("Сбросить");
+    private final JButton refreshButton = new JButton("Обновить");
+    private final JButton addButton = new JButton("Новый товар");
+    private final JButton editButton = new JButton("Редактировать");
+    private final JButton deleteButton = new JButton("Удалить");
+    private final JButton operationsButton = new JButton("Операции");
+    private final JSpinner pageSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+    private final JComboBox<Integer> pageSizeCombo = new JComboBox<>(new Integer[]{10, 25, 50, 100});
+    @Setter
+    private ProductListViewPresenter presenter;
 
     public ProductListViewImpl() {
         setTitle("Учет товаров - Список");
@@ -29,32 +37,22 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        productTableModel = new ProductTableModel(new ArrayList<>());
+        productsTable = new JTable(productTableModel);
+
+        initializeUI();
+    }
+
+    private void initializeUI() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         mainPanel.add(createFilterPanel(), BorderLayout.NORTH);
         mainPanel.add(createTablePanel(), BorderLayout.CENTER);
-        mainPanel.add(createBottomPanel(), BorderLayout.SOUTH);
+        mainPanel.add(createControlPanel(), BorderLayout.SOUTH);
 
         add(mainPanel);
-    }
-
-    private JPanel createBottomPanel() {
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
-        bottomPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 60));
-
-        JPanel controlPanel = createControlPanel();
-        controlPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-        bottomPanel.add(controlPanel);
-
-        progressBar = new JProgressBar();
-        progressBar.setVisible(false);
-        progressBar.setIndeterminate(true);
-        progressBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
-        bottomPanel.add(progressBar);
-
-        return bottomPanel;
+        setupListeners();
     }
 
     private JPanel createFilterPanel() {
@@ -62,15 +60,11 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
         panel.setBorder(BorderFactory.createTitledBorder("Фильтры"));
 
         panel.add(new JLabel("Наименование:"));
-        nameField = new JTextField(20);
         panel.add(nameField);
 
         panel.add(new JLabel("Категория:"));
-        categoryField = new JTextField(20);
         panel.add(categoryField);
 
-        applyFilterButton = new JButton("Применить");
-        resetFilterButton = new JButton("Сбросить");
         panel.add(applyFilterButton);
         panel.add(resetFilterButton);
 
@@ -78,132 +72,111 @@ public class ProductListViewImpl extends JFrame implements ProductListView {
     }
 
     private JScrollPane createTablePanel() {
-        productTableModel = new ProductTableModel(new ArrayList<>());
-        productsTable = new JTable(productTableModel);
         productsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         productsTable.setAutoCreateRowSorter(true);
-        productsTable.getSelectionModel().addListSelectionListener(_ -> {
-            if (productsTable.getSelectedRow() == -1) {
-                editButton.setEnabled(false);
-                deleteButton.setEnabled(false);
-            } else {
-                editButton.setEnabled(true);
-                deleteButton.setEnabled(true);
-            }
-        });
-
         return new JScrollPane(productsTable);
     }
 
     private JPanel createControlPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        panel.add(new JLabel("Страница:"));
-        pageSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
-        panel.add(pageSpinner);
+        JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        paginationPanel.add(new JLabel("Страница:"));
+        paginationPanel.add(pageSpinner);
 
-        panel.add(new JLabel("Размер страницы:"));
-        pageSizeCombo = new JComboBox<>(new Integer[]{10, 25, 50, 100});
+        paginationPanel.add(new JLabel("Размер страницы:"));
         pageSizeCombo.setSelectedIndex(1);
-        panel.add(pageSizeCombo);
+        paginationPanel.add(pageSizeCombo);
 
-        refreshButton = new JButton("Обновить");
-        addButton = new JButton("Новый товар");
-        editButton = new JButton("Редактировать");
-        deleteButton = new JButton("Удалить");
-        editButton.setEnabled(false);
-        deleteButton.setEnabled(false);
+        paginationPanel.add(refreshButton);
+        paginationPanel.add(addButton);
+        paginationPanel.add(editButton);
+        paginationPanel.add(deleteButton);
+        paginationPanel.add(operationsButton);
 
-        panel.add(refreshButton);
-        panel.add(addButton);
-        panel.add(editButton);
-        panel.add(deleteButton);
+        panel.add(paginationPanel);
 
         return panel;
     }
 
-    @Override
-    public Component getComponent() {
-        return this;
+    private void setupListeners() {
+        productsTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                presenter.onItemSelected(getSelectedItem());
+            }
+        });
+
+        applyFilterButton.addActionListener(e -> presenter.onApplyFilters());
+        resetFilterButton.addActionListener(e -> presenter.onResetFilters());
+        refreshButton.addActionListener(e -> presenter.loadProducts(getCurrentPage(), getPageSize()));
+        addButton.addActionListener(e -> presenter.onAddProduct());
+        editButton.addActionListener(e -> presenter.onEditProduct());
+        deleteButton.addActionListener(e -> presenter.onDeleteProduct());
+        operationsButton.addActionListener(e -> presenter.onShowOperations());
     }
 
     @Override
-    public String getNameFieldText() {
-        return nameField.getText();
+    public void setOperationsButtonEnabled(boolean enabled) {
+        editButton.setEnabled(enabled && getSelectedItem() != null);
+        deleteButton.setEnabled(enabled && getSelectedItem() != null);
+        operationsButton.setEnabled(enabled && getSelectedItem() != null);
     }
 
     @Override
-    public String getCategoryFieldText() {
-        return categoryField.getText();
+    public void displayItems(List<GoodsResponse> items) {
+        productTableModel.setGoodsList(items);
+        productTableModel.fireTableDataChanged();
     }
 
     @Override
-    public long getCurrentPage() {
-        return Long.parseLong(String.valueOf(pageSpinner.getValue()));
+    public GoodsResponse getSelectedItem() {
+        int row = productsTable.getSelectedRow();
+        return row == -1 ? null : productTableModel.getItemAt(row);
     }
 
     @Override
-    public long getPageSize() {
-        return Long.parseLong(String.valueOf(Objects.requireNonNullElse(pageSizeCombo.getSelectedItem(), 1)));
+    public void showError(String message) {
+        JOptionPane.showMessageDialog(this, message, "Ошибка", JOptionPane.ERROR_MESSAGE);
     }
 
     @Override
-    public void setEditButtonAction(ActionListener listener) {
-        editButton.addActionListener(listener);
+    public boolean showWarningDelete(String message) {
+        return JOptionPane.showConfirmDialog(
+                this,
+                message,
+                "Подтверждение удаления",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION;
     }
 
     @Override
-    public void setAddButtonAction(ActionListener listener) {
-        addButton.addActionListener(listener);
+    public FilterGoodsRequest getFilters() {
+        return FilterGoodsRequest.builder()
+                .name(nameField.getText())
+                .category(categoryField.getText())
+                .build();
     }
 
     @Override
-    public void setRefreshButtonAction(ActionListener listener) {
-        refreshButton.addActionListener(listener);
-    }
-
-    @Override
-    public void setResetFilterButtonAction(ActionListener listener) {
-        resetFilterButton.addActionListener(listener);
-    }
-
-    @Override
-    public void setDeleteButtonAction(ActionListener listener) {
-        deleteButton.addActionListener(listener);
-    }
-
-    @Override
-    public void setApplyFilterButtonAction(ActionListener listener) {
-        applyFilterButton.addActionListener(listener);
-    }
-
-    @Override
-    public void setProductList(List<GoodsResponse> products) {
-        productTableModel.setGoodsList(products);
-    }
-
-    @Override
-    public void clearFilterFields() {
+    public void resetFilters() {
         nameField.setText("");
         categoryField.setText("");
     }
 
     @Override
-    public long getSelectedProductId() {
-        if (productsTable.getSelectedRow() == -1) {
-            return -1;
-        }
-        return (long) productsTable.getValueAt(productsTable.getSelectedRow(), 0);
+    public int getCurrentPage() {
+        return (Integer) pageSpinner.getValue();
     }
 
     @Override
-    public void setLoading(boolean isLoading) {
-        progressBar.setVisible(isLoading);
-        applyFilterButton.setEnabled(!isLoading);
-        refreshButton.setEnabled(!isLoading);
-        editButton.setEnabled(!isLoading && productsTable.getSelectedRow() != -1);
-        deleteButton.setEnabled(!isLoading && productsTable.getSelectedRow() != -1);
-        addButton.setEnabled(!isLoading);
-        resetFilterButton.setEnabled(!isLoading);
+    public int getPageSize() {
+        return (Integer) Objects.requireNonNull(pageSizeCombo.getSelectedItem());
     }
+
+    @Override
+    public void showView() {
+        setVisible(true);
+    }
+
 }

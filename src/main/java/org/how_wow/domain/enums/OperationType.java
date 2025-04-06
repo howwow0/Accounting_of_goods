@@ -8,5 +8,20 @@ package org.how_wow.domain.enums;
  */
 public enum OperationType {
     INBOUND,
-    OUTBOUND
+    OUTBOUND;
+
+    public static OperationType fromString(String type) {
+        return switch (type) {
+            case "Поступление" -> INBOUND;
+            case "Списание" -> OUTBOUND;
+            default -> throw new IllegalArgumentException("Unknown operation type: " + type);
+        };
+    }
+
+    public static String toString(OperationType type) {
+        return switch (type) {
+            case INBOUND -> "Поступление";
+            case OUTBOUND -> "Списание";
+        };
+    }
 }

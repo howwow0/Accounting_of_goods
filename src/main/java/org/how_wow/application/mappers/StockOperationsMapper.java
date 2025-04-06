@@ -1,7 +1,7 @@
 package org.how_wow.application.mappers;
 
-import org.how_wow.application.dto.StockOperations.request.StockOperationsRequest;
-import org.how_wow.application.dto.StockOperations.response.StockOperationsResponse;
+import org.how_wow.application.dto.stockOperations.request.StockOperationsRequest;
+import org.how_wow.application.dto.stockOperations.response.StockOperationsResponse;
 import org.how_wow.application.dto.repository.PaginatedResult;
 import org.how_wow.domain.model.StockOperations;
 

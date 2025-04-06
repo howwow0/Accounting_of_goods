@@ -2,8 +2,9 @@ package org.how_wow.application.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.how_wow.application.dto.StockOperations.request.StockOperationsRequest;
-import org.how_wow.application.dto.StockOperations.response.StockOperationsResponse;
+import org.how_wow.application.dto.stockOperations.request.FilterStockOperationsRequest;
+import org.how_wow.application.dto.stockOperations.request.StockOperationsRequest;
+import org.how_wow.application.dto.stockOperations.response.StockOperationsResponse;
 import org.how_wow.application.dto.goods.request.UpdateGoodsQuantityRequest;
 import org.how_wow.application.dto.repository.PaginatedResult;
 import org.how_wow.application.mappers.StockOperationsMapper;
@@ -89,9 +90,9 @@ public class StockOperationsServiceImpl implements StockOperationService {
      * с возможностью пагинации (страничный вывод).
      * </p>
      *
-     * @param goodsId ID товара для поиска операций.
+     * @param goodsId    ID товара для поиска операций.
      * @param pageNumber Номер страницы.
-     * @param pageSize Размер страницы.
+     * @param pageSize   Размер страницы.
      * @return Пагинированный список операций.
      */
     @Override
@@ -149,5 +150,38 @@ public class StockOperationsServiceImpl implements StockOperationService {
     @Override
     public boolean existsByGoodsId(Long goodsId) {
         return stockOperationsRepository.existsByGoodsId(goodsId);
+    }
+
+
+    /**
+     * Получает список операций по товару с фильтрацией по типу операции и диапазону дат.
+     * <p>
+     * Этот метод позволяет получить список операций пополнения и списания для товара с указанным ID,
+     * с возможностью фильтрации по типу операции и диапазону дат.
+     * </p>
+     *
+     * @param goodsId                      ID товара для поиска операций.
+     * @param filterStockOperationsRequest Фильтр для операций (тип операции, диапазон дат).
+     * @param pageNumber                   Номер страницы.
+     * @param pageSize                     Размер страницы.
+     * @return Пагинированный список операций.
+     */
+    @Override
+    public PaginatedResult<StockOperationsResponse> findStocksByGoodsIdAndOperationTypeAndTimeDatesWithPagination(Long goodsId, FilterStockOperationsRequest filterStockOperationsRequest, Long pageNumber, Long pageSize) {
+        log.debug("Поиск операций по товару ID={}. Страница={}, Размер={}",
+                goodsId, pageNumber, pageSize);
+
+        longIdValidator.validate(goodsId);
+        pageNumberAndPageSizeValidator.validate(pageNumber);
+        pageNumberAndPageSizeValidator.validate(pageSize);
+
+        return stockOperationsMapper.toPaginatedGoodsResponse(
+                stockOperationsRepository.findContainsByGoodsIdAndOperationTypeAndBetweenTimeDatesWithPaging(
+                        goodsId,
+                        filterStockOperationsRequest.operationType(),
+                        filterStockOperationsRequest.startDateTime(),
+                        filterStockOperationsRequest.endDateTime(),
+                        pageNumber,
+                        pageSize));
     }
 }

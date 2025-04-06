@@ -1,40 +1,31 @@
 package org.how_wow.infrastructure.ui.view;
 
+import org.how_wow.application.dto.goods.request.FilterGoodsRequest;
 import org.how_wow.application.dto.goods.response.GoodsResponse;
+import org.how_wow.infrastructure.ui.presenters.ProductListViewPresenter;
 
-import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 public interface ProductListView {
+    void displayItems(List<GoodsResponse> items);
 
-    Component getComponent();
+    void setOperationsButtonEnabled(boolean enabled);
 
-    String getNameFieldText();
+    GoodsResponse getSelectedItem();
 
-    String getCategoryFieldText();
+    void showError(String message);
 
-    long getCurrentPage();
+    boolean showWarningDelete(String message);
 
-    long getPageSize();
+    void resetFilters();
 
-    void setEditButtonAction(ActionListener listener);
+    FilterGoodsRequest getFilters();
 
-    void setAddButtonAction(ActionListener listener);
+    void setPresenter(ProductListViewPresenter presenter);
 
-    void setRefreshButtonAction(ActionListener listener);
+    int getCurrentPage();
 
-    void setResetFilterButtonAction(ActionListener listener);
+    int getPageSize();
 
-    void setDeleteButtonAction(ActionListener listener);
-
-    void setApplyFilterButtonAction(ActionListener listener);
-
-    void setProductList(List<GoodsResponse> products);
-
-    void clearFilterFields();
-
-    long getSelectedProductId();
-
-    void setLoading(boolean isLoading);
+    void showView();
 }

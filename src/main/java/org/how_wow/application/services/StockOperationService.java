@@ -1,9 +1,11 @@
 package org.how_wow.application.services;
 
-import org.how_wow.application.dto.StockOperations.request.StockOperationsRequest;
-import org.how_wow.application.dto.StockOperations.response.StockOperationsResponse;
+import org.how_wow.application.dto.stockOperations.request.FilterStockOperationsRequest;
+import org.how_wow.application.dto.stockOperations.request.StockOperationsRequest;
+import org.how_wow.application.dto.stockOperations.response.StockOperationsResponse;
 import org.how_wow.application.dto.repository.PaginatedResult;
 import org.how_wow.exceptions.StockOperationsNotFoundException;
+
 
 /**
  * Сервис для управления операциями со складом.
@@ -44,9 +46,9 @@ public interface StockOperationService {
      * с возможностью пагинации (разбиение на страницы).
      * </p>
      *
-     * @param goodsId ID товара, для которого нужно получить операции.
+     * @param goodsId    ID товара, для которого нужно получить операции.
      * @param pageNumber Номер страницы.
-     * @param pageSize Размер страницы.
+     * @param pageSize   Размер страницы.
      * @return Пагинированный список операций.
      */
     PaginatedResult<StockOperationsResponse> findStockByGoodsId(Long goodsId, Long pageNumber, Long pageSize);
@@ -74,4 +76,24 @@ public interface StockOperationService {
      * @return true, если операции существуют, иначе false.
      */
     boolean existsByGoodsId(Long goodsId);
+
+    /**
+     * Получает список операций по товару с фильтрацией по типу операции и диапазону дат.
+     * <p>
+     * Этот метод позволяет получить список операций пополнения и списания для указанного товара,
+     * с возможностью фильтрации по типу операции и диапазону дат.
+     * </p>
+     *
+     * @param goodsId                      ID товара, для которого нужно получить операции.
+     * @param filterStockOperationsRequest Запрос с фильтрацией (тип операции, диапазон дат).
+     * @param pageNumber                   Номер страницы.
+     * @param pageSize                     Размер страницы.
+     * @return Пагинированный список операций.
+     */
+    PaginatedResult<StockOperationsResponse> findStocksByGoodsIdAndOperationTypeAndTimeDatesWithPagination(
+            Long goodsId,
+            FilterStockOperationsRequest filterStockOperationsRequest,
+            Long pageNumber,
+            Long pageSize
+    );
 }

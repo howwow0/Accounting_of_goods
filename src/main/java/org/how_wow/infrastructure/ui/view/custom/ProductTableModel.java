@@ -4,6 +4,10 @@ import org.how_wow.application.dto.goods.response.GoodsResponse;
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
+/**
+ * Модель таблицы для отображения списка товаров.
+ * Наследуется от AbstractTableModel для реализации пользовательской модели таблицы.
+ */
 public class ProductTableModel extends AbstractTableModel {
 
     private final List<GoodsResponse> goodsList;
@@ -46,5 +50,12 @@ public class ProductTableModel extends AbstractTableModel {
         this.goodsList.clear();
         this.goodsList.addAll(goodsList);
         fireTableDataChanged();
+    }
+
+    public GoodsResponse getItemAt(int row) {
+        if (row >= 0 && row < goodsList.size()) {
+            return goodsList.get(row);
+        }
+        return null;
     }
 }

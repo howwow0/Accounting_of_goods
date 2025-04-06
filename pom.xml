@@ -7,8 +7,6 @@
     <groupId>org.how_wow</groupId>
     <artifactId>Accounting_of_goods</artifactId>
     <version>1.0-SNAPSHOT</version>
-
-
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -24,6 +22,11 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.5.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.5</version>
         </dependency>
     </dependencies>
     <properties>

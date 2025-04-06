@@ -1,28 +1,31 @@
-package org.how_wow.infrastructure.ui.view.impl;
+package org.how_wow.infrastructure.ui.view.dialogs.impl;
 
-import lombok.Getter;
-import org.how_wow.infrastructure.ui.view.ProductDialog;
+import lombok.Setter;
+import org.how_wow.application.dto.goods.request.GoodsRequest;
+import org.how_wow.application.dto.goods.response.GoodsResponse;
+import org.how_wow.infrastructure.ui.presenters.dialogs.DialogPresenter;
 import org.how_wow.infrastructure.ui.view.custom.BigDecimalTextField;
+import org.how_wow.infrastructure.ui.view.dialogs.DialogView;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 
-public class ProductDialogImpl extends JDialog implements ProductDialog {
+public class ProductDialog extends JDialog implements DialogView<GoodsResponse, GoodsRequest> {
     private final JTextField nameField;
     private final JTextField categoryField;
     private final BigDecimalTextField priceField;
     private final JButton actionButton;
 
-    public ProductDialogImpl(JFrame parent, String title, String actionButtonText) {
-        super(parent, title, true);
+    @Setter
+    private DialogPresenter presenter;
+
+    public ProductDialog(Frame parent) {
+        super(parent, ModalityType.APPLICATION_MODAL);
         setSize(400, 300);
         setMinimumSize(new Dimension(400, 300));
         setMaximumSize(new Dimension(400, 300));
-        setLocationRelativeTo(parent);
-
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -70,62 +73,65 @@ public class ProductDialogImpl extends JDialog implements ProductDialog {
         gbc.anchor = GridBagConstraints.CENTER;
 
         JPanel buttonPanel = new JPanel();
-        actionButton = new JButton(actionButtonText);
+        actionButton = new JButton();
         JButton cancelButton = new JButton("Отмена");
-
+        cancelButton.addActionListener(e -> dispose());
         buttonPanel.add(actionButton);
         buttonPanel.add(cancelButton);
 
         mainPanel.add(buttonPanel, gbc);
 
         add(mainPanel);
-
-        // Закрытие окна по кнопке "Отмена"
-        cancelButton.addActionListener(e -> dispose());
     }
 
     @Override
-    public void setActionButtonAction(ActionListener listener) {
-        actionButton.addActionListener(listener);
+    public void setData(GoodsResponse data) {
+        if (data != null) {
+            nameField.setText(data.name());
+            categoryField.setText(data.category());
+            priceField.setValue(data.price());
+        } else {
+            nameField.setText("");
+            categoryField.setText("");
+            priceField.setValue(BigDecimal.ZERO);
+        }
     }
 
     @Override
-    public String getNameFieldText() {
-        return nameField.getText();
+    public GoodsRequest getData() {
+        return GoodsRequest.builder()
+                .name(nameField.getText())
+                .category(categoryField.getText())
+                .price(priceField.getBigDecimalValue())
+                .build();
     }
 
     @Override
-    public String getCategoryFieldText() {
-        return categoryField.getText();
+    public void setSaveButtonText(String text) {
+        actionButton.setText(text);
     }
 
     @Override
-    public BigDecimal getPriceFieldValue() {
-        return priceField.getBigDecimalValue();
+    public void showDialog() {
+        actionButton.addActionListener(e -> presenter.onSave());
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setVisible(true);
     }
 
     @Override
-    public void setPriceFieldValue(BigDecimal price) {
-        priceField.setBigDecimalValue(price);
-    }
-
-    @Override
-    public void setNameFieldText(String name) {
-        nameField.setText(name);
-    }
-
-    @Override
-    public void setCategoryFieldText(String category) {
-        categoryField.setText(category);
-    }
-
-    @Override
-    public void close() {
+    public void closeDialog() {
+        presenter = null;
         dispose();
     }
 
     @Override
-    public Component getComponent() {
-        return this;
+    public void showError(String message) {
+        JOptionPane.showMessageDialog(this, message, "Ошибка", JOptionPane.ERROR_MESSAGE);
     }
+
+    @Override
+    public void showSuccess(String message) {
+        JOptionPane.showMessageDialog(this, message, "Успех", JOptionPane.INFORMATION_MESSAGE);
+    }
+
 }

@@ -5,6 +5,9 @@ import javax.swing.text.*;
 import java.math.BigDecimal;
 import java.text.*;
 
+/**
+ * Кастомный текстовый компонент для ввода чисел с плавающей запятой (BigDecimal).
+ */
 public class BigDecimalTextField extends JFormattedTextField {
     private int decimalPlaces = 2;
 

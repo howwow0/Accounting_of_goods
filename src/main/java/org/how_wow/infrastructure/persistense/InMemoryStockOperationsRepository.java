@@ -2,9 +2,12 @@ package org.how_wow.infrastructure.persistense;
 
 import lombok.RequiredArgsConstructor;
 import org.how_wow.application.dto.repository.PaginatedResult;
+import org.how_wow.domain.enums.OperationType;
 import org.how_wow.domain.model.StockOperations;
 import org.how_wow.domain.repository.StockOperationsRepository;
 
+import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,7 +24,7 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
     /**
      * Находит операции по ID товара с пагинацией.
      *
-     * @param goodsId   ID товара
+     * @param goodsId    ID товара
      * @param pageNumber номер страницы
      * @param pageSize   размер страницы
      * @return пагинированный список операций
@@ -35,7 +38,7 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
                 .totalItems((long) stockOperations.size())
                 .content(stockOperations.values().stream()
                         .filter(stockOperation -> stockOperation.getGoodsId() == goodsId)
-                        .skip(pageNumber * pageSize)
+                        .skip((pageNumber - 1) * pageSize)
                         .limit(pageSize)
                         .collect(Collectors.toList()))
                 .build();
@@ -48,9 +51,12 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
      */
     @Override
     public void deleteAllByGoodsId(long goodsId) {
-        for (StockOperations stockOperation : stockOperations.values()) {
+        Iterator<Map.Entry<Long, StockOperations>> iterator = stockOperations.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Long, StockOperations> entry = iterator.next();
+            StockOperations stockOperation = entry.getValue();
             if (stockOperation.getGoodsId() == goodsId) {
-                stockOperations.remove(stockOperation.getId());
+                iterator.remove();
             }
         }
     }
@@ -68,10 +74,39 @@ public class InMemoryStockOperationsRepository implements StockOperationsReposit
     }
 
     /**
+     * Находит операции по ID товара, типу операции и диапазону дат с пагинацией.
+     *
+     * @param goodsId       ID товара
+     * @param operationType тип операции
+     * @param startDateTime начальная дата
+     * @param endDateTime   конечная дата
+     * @param pageNumber    номер страницы
+     * @param pageSize      размер страницы
+     * @return пагинированный список операций
+     */
+    @Override
+    public PaginatedResult<StockOperations> findContainsByGoodsIdAndOperationTypeAndBetweenTimeDatesWithPaging(long goodsId, OperationType operationType, LocalDateTime startDateTime, LocalDateTime endDateTime, long pageNumber, long pageSize) {
+        return PaginatedResult.<StockOperations>builder()
+                .currentPage(pageNumber)
+                .totalPages(stockOperations.size() / pageSize)
+                .pageSize(pageSize)
+                .totalItems((long) stockOperations.size())
+                .content(stockOperations.values().stream()
+                        .filter(stockOperation -> stockOperation.getGoodsId() == goodsId
+                                && (operationType == null || stockOperation.getOperationType() == operationType)
+                                && (stockOperation.getOperationDateTime().isAfter(startDateTime) || stockOperation.getOperationDateTime().isEqual(startDateTime))
+                                && (stockOperation.getOperationDateTime().isBefore(endDateTime) || stockOperation.getOperationDateTime().isEqual(endDateTime)))
+                        .skip((pageNumber - 1) * pageSize)
+                        .limit(pageSize)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    /**
      * Сохраняет новую или обновленную операцию в репозитории.
      *
      * @param entity операция для сохранения
-     * @param <S> тип операции
+     * @param <S>    тип операции
      * @return сохраненная операция
      */
     @Override
