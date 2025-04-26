@@ -9,8 +9,8 @@ import org.how_wow.application.services.impl.StockOperationsServiceImpl;
 import org.how_wow.application.validators.*;
 import org.how_wow.domain.repository.GoodsRepository;
 import org.how_wow.domain.repository.StockOperationsRepository;
-import org.how_wow.infrastructure.persistense.InMemoryGoodsRepository;
-import org.how_wow.infrastructure.persistense.InMemoryStockOperationsRepository;
+import org.how_wow.infrastructure.persistense.PostgresJDBCGoodsRepository;
+import org.how_wow.infrastructure.persistense.PostgresJDBCStockOperationsRepository;
 import org.how_wow.infrastructure.ui.presenters.ProductListViewPresenter;
 import org.how_wow.infrastructure.ui.presenters.impl.ProductListViewPresenterImpl;
 import org.how_wow.infrastructure.ui.view.ProductListView;
@@ -21,12 +21,16 @@ import org.how_wow.infrastructure.ui.view.impl.ProductListViewImpl;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
 
 public class AppStarter {
     public void Start() {
-        GoodsRepository goodsRepository = new InMemoryGoodsRepository(new HashMap<>());
-        StockOperationsRepository stockOperationsRepository = new InMemoryStockOperationsRepository(new HashMap<>());
+
+        new LiquibaseRunner().migrate();
+
+        GoodsRepository goodsRepository = new PostgresJDBCGoodsRepository();
+        StockOperationsRepository stockOperationsRepository = new PostgresJDBCStockOperationsRepository();
+
+
         LongIdValidator idValidator = new LongIdValidator();
         NameValidator nameValidator = new NameValidator();
         CategoryValidator categoryValidator = new CategoryValidator();

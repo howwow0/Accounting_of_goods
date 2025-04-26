@@ -18,7 +18,7 @@ public class NameValidator implements Validator<String> {
         if (s == null || s.isBlank()) {
             throw new ValidationException("Наименование товара не может быть пустым");
         }
-        int MAX_LENGTH = 50;
+        int MAX_LENGTH = 100;
         if (s.length() > MAX_LENGTH) {
             throw new ValidationException("Наименование товара не может быть длиннее " + MAX_LENGTH + " символов");
         }

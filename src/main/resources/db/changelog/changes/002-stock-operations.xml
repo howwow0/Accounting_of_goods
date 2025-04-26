@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
+
+    <changeSet id="002-create-stock-operations-table" author="your_name">
+        <createTable tableName="stock_operations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="goods_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_stock_operations_goods"
+                             referencedTableName="goods" referencedColumnNames="id"/>
+            </column>
+            <column name="operation_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_time" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="stock_operations"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
