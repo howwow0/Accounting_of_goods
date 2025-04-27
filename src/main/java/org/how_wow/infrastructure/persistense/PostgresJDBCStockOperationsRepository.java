@@ -6,10 +6,7 @@ import org.how_wow.domain.enums.OperationType;
 import org.how_wow.domain.model.StockOperations;
 import org.how_wow.domain.repository.StockOperationsRepository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -62,18 +59,40 @@ public class PostgresJDBCStockOperationsRepository implements StockOperationsRep
     }
 
     @Override
-    public PaginatedResult<StockOperations> findContainsByGoodsIdAndOperationTypeAndBetweenTimeDatesWithPaging(long goodsId, OperationType operationType, LocalDateTime startDateTime, LocalDateTime endDateTime, long pageNumber, long pageSize) {
-        String sql = "SELECT * FROM stock_operations WHERE goods_id = ? AND operation_type = ? AND date_time BETWEEN ? AND ? ORDER BY id LIMIT ? OFFSET ?";
+    public PaginatedResult<StockOperations> findContainsByGoodsIdAndOperationTypeAndBetweenTimeDatesWithPaging(
+            long goodsId,
+            OperationType operationType,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime,
+            long pageNumber,
+            long pageSize) {
+
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM stock_operations WHERE goods_id = ?");
+
+        if (operationType != null) {
+            sqlBuilder.append(" AND operation_type = ?");
+        }
+
+        sqlBuilder.append(" AND date_time BETWEEN ? AND ? ORDER BY id LIMIT ? OFFSET ?");
+
         try (Connection connection = JDBCManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, goodsId);
-            statement.setString(2, operationType.name());
-            statement.setTimestamp(3, java.sql.Timestamp.valueOf(startDateTime));
-            statement.setTimestamp(4, java.sql.Timestamp.valueOf(endDateTime));
-            statement.setLong(5, pageSize);
-            statement.setLong(6, (pageNumber - 1) * pageSize);
+             PreparedStatement statement = connection.prepareStatement(sqlBuilder.toString())) {
+
+            int paramIndex = 1;
+            statement.setLong(paramIndex++, goodsId);
+
+            if (operationType != null) {
+                statement.setString(paramIndex++, operationType.name());
+            }
+
+            statement.setTimestamp(paramIndex++, Timestamp.valueOf(startDateTime));
+            statement.setTimestamp(paramIndex++, Timestamp.valueOf(endDateTime));
+            statement.setLong(paramIndex++, pageSize);
+            statement.setLong(paramIndex, (pageNumber - 1) * pageSize);
+
             ResultSet resultSet = statement.executeQuery();
             return getStockOperationsPaginatedResult(pageNumber, pageSize, resultSet);
+
         } catch (SQLException e) {
             throw new org.how_wow.exceptions.SQLException(e.getMessage());
         }

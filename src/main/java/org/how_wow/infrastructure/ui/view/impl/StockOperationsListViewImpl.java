@@ -12,8 +12,6 @@ import org.how_wow.infrastructure.ui.view.custom.StockOperationsTableModel;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -188,8 +186,8 @@ public class StockOperationsListViewImpl extends JDialog implements StockOperati
 
     @Override
     public void resetFilters() {
-        dateFromSpinner.setValue(Date.from(Instant.from(LocalDateTime.now().toLocalDate())));
-        dateToSpinner.setValue(Date.from(Instant.from(LocalDateTime.now().toLocalDate())));
+        dateFromSpinner.setValue(new Date());
+        dateToSpinner.setValue(new Date());
         operationTypeFilter.setSelectedIndex(0);
     }
 
@@ -201,18 +199,13 @@ public class StockOperationsListViewImpl extends JDialog implements StockOperati
         }
 
         Date date1 = (Date) dateFromSpinner.getValue();
-        LocalDate localDate1 = date1.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
         Date date2 = (Date) dateToSpinner.getValue();
-        LocalDate localDate2 = date2.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
+        LocalDateTime startDateTime = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime endDateTime = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         return FilterStockOperationsRequest.builder()
                 .operationType(operationType)
-                .startDateTime(LocalDateTime.of(localDate1, localDate1.atStartOfDay().toLocalTime()))
-                .endDateTime(LocalDateTime.of(localDate2, localDate2.atStartOfDay().toLocalTime()))
+                .startDateTime(startDateTime)
+                .endDateTime(endDateTime)
                 .build();
     }
 

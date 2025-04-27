@@ -14,7 +14,7 @@ public enum OperationType {
         return switch (type) {
             case "Поступление" -> INBOUND;
             case "Списание" -> OUTBOUND;
-            default -> throw new IllegalArgumentException("Unknown operation type: " + type);
+            default -> throw new IllegalArgumentException("Неизвестный тип операции: " + type);
         };
     }
 
